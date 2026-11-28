@@ -23,6 +23,13 @@ type Scope = {
 
 const storage = new AsyncLocalStorage<Scope>();
 
+let nowMs = (): number => performance.now();
+
+/** Test hook: replace high-resolution clock (default `performance.now`). */
+export function __setDbMissTimingNowForTests(replace: (() => number) | null): void {
+  nowMs = replace ?? (() => performance.now());
+}
+
 export async function runDbMissTimingPhase<T>(
   phase: DbMissTimingPhase,
   fn: () => Promise<T>,
@@ -47,11 +54,11 @@ export async function timedDbExecute(fn: () => Promise<unknown>): Promise<unknow
     scope.conn += takeDbClientInitMs();
     scope.connInitTaken = true;
   }
-  const t0 = performance.now();
+  const t0 = nowMs();
   try {
     return await fn();
   } finally {
-    scope.q += performance.now() - t0;
+    scope.q += nowMs() - t0;
     scope.qn += 1;
   }
 }
