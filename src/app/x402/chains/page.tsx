@@ -8,7 +8,10 @@ import { safeJsonLd } from "@/lib/util/json-ld";
 import { getObservatoryStatsCached } from "@/lib/observatory/cached-reads";
 import type { L1ChainStats } from "@/lib/observatory/reader";
 import { publicChainLabel } from "@/lib/observatory/chains";
+import { AeoFaqBlock } from "@/components/site/AeoFaqBlock";
 import { TableScroll } from "@/components/site/TableScroll";
+import { X402_ECONOMY_SERIES } from "@/lib/site/x402-doc-head";
+import { chainsHubFaq, faqPageJsonLd } from "@/lib/x402/aeo-faqs";
 
 const PAGE = CHAINS_HUB;
 
@@ -50,12 +53,15 @@ export default async function ChainsHubPage() {
   const extra = readable
     ? rows.filter((r) => r.settled > 0 && !known.has(r.chain) && !known.has(r.label) && !known.has(publicChainLabel(r.chain)))
     : [];
+  const readAt = stats?.readAt ?? null;
+  const faq = chainsHubFaq(readable, readAt);
 
   return (
     <main className="px-4 pt-8 pb-4 sm:px-6 md:px-8 md:pt-12">
       <article className="sheet">
         <script type="application/ld+json" nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(article) }} />
         <script type="application/ld+json" nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumb) }} />
+        <script type="application/ld+json" nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(faqPageJsonLd(faq)) }} />
 
         <div className="doc-head doc-head-compact">
           <div className="doc-head-col">
@@ -71,12 +77,10 @@ export default async function ChainsHubPage() {
           </div>
           <div className="doc-head-col">
             <span>vet402</span>
+            <span>{X402_ECONOMY_SERIES}</span>
             <span>
-              <Link href="/observatory/state" className="underline">
-                State of x402
-              </Link>
+              Guide published <time dateTime={GUIDE_UPDATED}>{GUIDE_UPDATED}</time>
             </span>
-            <span>{GUIDE_UPDATED}</span>
           </div>
         </div>
 
@@ -178,6 +182,8 @@ export default async function ChainsHubPage() {
           </Link>
           .
         </p>
+        <AeoFaqBlock faq={faq} sectionNo={extra.length > 0 ? 3 : 2} />
+
         <p className="doc-p mt-8">
           Source:{" "}
           {/* API route, not a page: a plain anchor avoids an RSC prefetch that answers 400. */}

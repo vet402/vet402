@@ -16,6 +16,9 @@ import { publicChainLabel } from "@/lib/observatory/chains";
 import { TableScroll } from "@/components/site/TableScroll";
 import { GUIDE_UPDATED } from "@/components/site/x402-answers";
 import { PINNED_ASSETS_WITH_ISSUER_TEXT } from "@/lib/observatory/settlement-assets";
+import { AeoFaqBlock } from "@/components/site/AeoFaqBlock";
+import { X402_ECONOMY_SERIES } from "@/lib/site/x402-doc-head";
+import { faqPageJsonLd, statisticsFaq } from "@/lib/x402/aeo-faqs";
 
 const PATH = "/x402/statistics";
 
@@ -136,6 +139,7 @@ export default async function X402StatisticsPage() {
         },
       ]
     : [];
+  const faq = statisticsFaq(live, readAt, stats);
 
   return (
     <main className="px-4 pt-8 pb-4 sm:px-6 md:px-8 md:pt-12">
@@ -145,6 +149,7 @@ export default async function X402StatisticsPage() {
           <script type="application/ld+json" nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(dataset) }} />
         ) : null}
         <script type="application/ld+json" nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumb) }} />
+        <script type="application/ld+json" nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(faqPageJsonLd(faq)) }} />
 
         <div className="doc-head doc-head-compact">
           <div className="doc-head-col">
@@ -160,12 +165,10 @@ export default async function X402StatisticsPage() {
           </div>
           <div className="doc-head-col">
             <span>vet402</span>
+            <span>{X402_ECONOMY_SERIES}</span>
             <span>
-              <Link href="/observatory/state" className="underline">
-                State of x402
-              </Link>
+              Guide published <time dateTime={GUIDE_UPDATED}>{GUIDE_UPDATED}</time>
             </span>
-            <span>{GUIDE_UPDATED}</span>
           </div>
         </div>
 
@@ -273,6 +276,8 @@ export default async function X402StatisticsPage() {
             </table>
           </TableScroll>
         )}
+
+        <AeoFaqBlock faq={faq} sectionNo={3} />
 
         <p className="doc-p mt-8">
           Source:{" "}

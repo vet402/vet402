@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
+import CodeBlock from "@/components/docs/CodeBlock";
+import { AeoFaqBlock } from "@/components/site/AeoFaqBlock";
 import { articleJsonLd, breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
+import { X402_ECONOMY_SERIES } from "@/lib/site/x402-doc-head";
+import {
+  AEO_CHECK_CURL_GEDX402,
+  AEO_CHECK_RESPONSE_EXAMPLE,
+} from "@/lib/x402/aeo-check-example";
+import { faqPageJsonLd, trustScoreFaq } from "@/lib/x402/aeo-faqs";
 import { safeJsonLd } from "@/lib/util/json-ld";
 import { TRUST_SCORE_PAGE, TRUST_SCORE_PUBLISHED } from "@/lib/x402/trust-score-sections";
 import { getObservatoryStatsCached } from "@/lib/observatory/cached-reads";
@@ -38,12 +46,14 @@ export default async function TrustScorePage() {
     { name: "x402", path: "/x402" },
     { name: "Trust score", path: PAGE.path },
   ]);
+  const faq = trustScoreFaq();
 
   return (
     <main className="px-4 pt-8 pb-4 sm:px-6 md:px-8 md:pt-12">
       <article className="sheet">
         <script type="application/ld+json" nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(article) }} />
         <script type="application/ld+json" nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumb) }} />
+        <script type="application/ld+json" nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(faqPageJsonLd(faq)) }} />
 
         <div className="doc-head doc-head-compact">
           <div className="doc-head-col">
@@ -59,8 +69,10 @@ export default async function TrustScorePage() {
           </div>
           <div className="doc-head-col">
             <span>vet402</span>
-            <span>x402 Economy</span>
-            <span>{TRUST_SCORE_PUBLISHED}</span>
+            <span>{X402_ECONOMY_SERIES}</span>
+            <span>
+              Page published <time dateTime={TRUST_SCORE_PUBLISHED}>{TRUST_SCORE_PUBLISHED}</time>
+            </span>
           </div>
         </div>
 
@@ -119,6 +131,20 @@ export default async function TrustScorePage() {
           <span>{PAGE.sections.window.title}</span>
         </h2>
         <p className="doc-p">{PAGE.sections.window.body}</p>
+
+        <h2 className="sec-head">
+          <span className="sec-no">6.</span>
+          <span>Call the API (no key)</span>
+        </h2>
+        <p className="doc-p">
+          GET /api/v1/check returns the delivery facts and recommendation vet402 publishes instead of a 0 to 100
+          score. The example URL is a delivered listing vet402 uses on the home paste form.
+        </p>
+        <CodeBlock label="GET /api/v1/check" code={AEO_CHECK_CURL_GEDX402} />
+        <p className="doc-p mt-4">Illustrative JSON shape (not a live read):</p>
+        <CodeBlock label="check response" code={AEO_CHECK_RESPONSE_EXAMPLE} />
+
+        <AeoFaqBlock faq={faq} sectionNo={7} />
 
         <p className="doc-p mt-6">
           <Link href="/x402/seller-reputation-api" className="doc-link">

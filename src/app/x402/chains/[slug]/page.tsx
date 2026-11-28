@@ -11,6 +11,9 @@ import { publicChainLabel } from "@/lib/observatory/chains";
 import { chainHeldLines } from "@/lib/observatory/chain-page-words";
 import { SELLER_INDEX_DELIVERY_WINDOW_DAYS } from "@/lib/sellers/seller-index";
 import { chainSellersPath, getChainSellerRosterForSlug } from "@/lib/sellers/chain-roster";
+import { AeoFaqBlock } from "@/components/site/AeoFaqBlock";
+import { X402_ECONOMY_SERIES } from "@/lib/site/x402-doc-head";
+import { chainSlugFaq, faqPageJsonLd } from "@/lib/x402/aeo-faqs";
 
 export function generateStaticParams() {
   return GUIDE_CHAINS.map((c) => ({ slug: c.slug }));
@@ -66,12 +69,15 @@ export default async function ChainGuidePage({ params }: { params: Promise<Param
     { name: "By chain", path: "/x402/chains" },
     { name: chain.publicName, path },
   ]);
+  const readAt = stats?.readAt ?? null;
+  const faq = chainSlugFaq(chain, row, readable, readAt);
 
   return (
     <main className="px-4 pt-8 pb-4 sm:px-6 md:px-8 md:pt-12">
       <article className="sheet">
         <script type="application/ld+json" nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(article) }} />
         <script type="application/ld+json" nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumb) }} />
+        <script type="application/ld+json" nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: safeJsonLd(faqPageJsonLd(faq)) }} />
 
         <div className="doc-head doc-head-compact">
           <div className="doc-head-col">
@@ -87,12 +93,10 @@ export default async function ChainGuidePage({ params }: { params: Promise<Param
           </div>
           <div className="doc-head-col">
             <span>vet402</span>
+            <span>{X402_ECONOMY_SERIES}</span>
             <span>
-              <Link href="/x402/chains" className="underline">
-                Measured chains
-              </Link>
+              Guide published <time dateTime={GUIDE_UPDATED}>{GUIDE_UPDATED}</time>
             </span>
-            <span>{GUIDE_UPDATED}</span>
           </div>
         </div>
 
@@ -206,6 +210,8 @@ export default async function ChainGuidePage({ params }: { params: Promise<Param
           </Link>
           .
         </p>
+
+        <AeoFaqBlock faq={faq} sectionNo={5} />
       </article>
     </main>
   );
