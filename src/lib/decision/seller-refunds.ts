@@ -76,7 +76,7 @@ export function sellerHostOfCanonicalUrl(canonicalUrl: string): string | null {
 
 export type RefundStatsReader = (host: string) => Promise<RefundStats | null>;
 
-async function readRefundStatsCached(host: string): Promise<RefundStats | null> {
+export async function readRefundStatsCached(host: string): Promise<RefundStats | null> {
   try {
     return await getSellerRefundStatsCached(host);
   } catch (err) {

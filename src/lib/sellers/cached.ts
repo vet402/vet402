@@ -17,6 +17,7 @@
 // ============================================================
 import { unstable_cache } from "next/cache";
 import { getDb } from "@/lib/db/client";
+import { timedDbExecute } from "@/lib/db/miss-timing";
 import { PUBLIC_READ_REVALIDATE } from "@/lib/observatory/public-read-revalidate";
 import type { SellerBoard, SellerDetail, SellerOtherChains } from "./board";
 import { readHostCalledVsDelivered, type HostCalledVsDelivered } from "./called-vs-delivered";
@@ -83,7 +84,7 @@ export const getSellerRefundStatsCached: (host: string) => Promise<RefundStats |
   async (host: string) => {
     const db = getDb();
     if (!db) throw new SellersUnavailable("database not configured");
-    return readSellerRefundStats(db, { host });
+    return timedDbExecute(() => readSellerRefundStats(db, { host })) as Promise<RefundStats | null>;
   },
   ["sellers:refunds:v3"],
   { revalidate: PUBLIC_READ_REVALIDATE, tags: ["observatory"] },
