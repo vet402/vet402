@@ -16,9 +16,10 @@ import { getObservatoryStatsCached } from "@/lib/observatory/cached-reads";
 const REFUNDS_PATH = "/x402/refunds";
 const REFUNDS_UPDATED = "2026-11-12";
 
-const REFUNDS_TITLE = "x402 refunds: what a buyer can do after paying";
+const REFUNDS_TITLE =
+  "x402 refunds: what happens when a payment fails or the seller does not deliver";
 const REFUNDS_DESCRIPTION =
-  "Whether an x402 payment can be refunded depends on the scheme and its payment flow. How exact and auth-capture differ, and how to check a seller first.";
+  "Whether an x402 refund is possible depends on the payment scheme. How failed payments and empty responses show up in vet402's purchase ledger, and how to check a seller first.";
 
 const SPEC_EXACT = "https://github.com/x402-foundation/x402/tree/main/specs/schemes/exact";
 const SPEC_AUTH_CAPTURE = "https://github.com/x402-foundation/x402/tree/main/specs/schemes/auth-capture";
@@ -124,8 +125,11 @@ export default async function RefundsPage() {
           </div>
         </div>
 
-        <h1 className="doc-title mt-8">x402 refunds</h1>
-        <p className="doc-p">Whether an x402 payment can be refunded depends on the payment scheme the seller offers in its 402.</p>
+        <h1 className="doc-title mt-8">{REFUNDS_TITLE}</h1>
+        <p className="doc-p">
+          When an x402 payment fails or the seller does not deliver after settlement, recovery depends on the payment
+          scheme the seller offered in its 402.
+        </p>
         <p className="doc-p">
           By default the exact scheme settles only after the seller&apos;s handler succeeds, so a failed call is not
           charged. The auth-capture scheme adds void and refund for the seller, and reclaim for the buyer once the
