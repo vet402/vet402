@@ -3,8 +3,9 @@
 //
 // verdict / score の変更は 2026-11-30 のレビューまで待つ（seller_refunded_failures は effect: none）。
 // ============================================================
+import type { CheckSellerMissTimingMs } from "@/lib/api/check-seller-miss-timing";
 import { getDb } from "@/lib/db/client";
-import { timedDbExecute } from "@/lib/db/miss-timing";
+import { runDbMissTimingPhase, timedDbExecute } from "@/lib/db/miss-timing";
 import { isNoDataCacheError } from "@/lib/observatory/state-reads";
 import { sellerHostOf } from "@/lib/sellers/host";
 import { getSellerRefundStatsCached } from "@/lib/sellers/cached";
@@ -89,11 +90,25 @@ export async function readRefundStatsCached(host: string): Promise<RefundStats |
   }
 }
 
+function readRefundStatsOrNull(host: string): Promise<RefundStats | null> {
+  return readRefundStatsCached(host).catch(() => null);
+}
+
 /** 売り手ホストの返金集計を先に読み始める（decide が buildDecision と重ねる）。ホストが無ければ null。 */
-export function prefetchSellerRefundStats(canonicalUrl: string): Promise<RefundStats | null> | null {
+export function prefetchSellerRefundStats(
+  canonicalUrl: string,
+  missTiming?: CheckSellerMissTimingMs,
+): Promise<RefundStats | null> | null {
   const host = sellerHostOfCanonicalUrl(canonicalUrl);
   if (!host) return null;
-  return readRefundStatsCached(host).catch(() => null);
+  if (!missTiming) return readRefundStatsOrNull(host);
+  return runDbMissTimingPhase("decide_refunds", () => readRefundStatsCached(host))
+    .then(({ value, slice }) => {
+      missTiming.db_decide_refunds_q = slice.q;
+      missTiming.db_decide_refunds_qn = slice.qn;
+      return value;
+    })
+    .catch(() => null);
 }
 
 /** 判定に refunds と（閾値を満たせば）理由コードを付ける。recommendation は変えない。 */

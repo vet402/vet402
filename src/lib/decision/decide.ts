@@ -29,7 +29,6 @@ import { decidePayer, decidePayee, l1BasisOf, DECISION_RULES_VERSION, type L1Bas
 import {
   attachSellerRefundsToDecision,
   prefetchSellerRefundStats,
-  readRefundStatsCached,
   sellerHostOfCanonicalUrl,
   type DecisionHostRefunds,
 } from "./seller-refunds";
@@ -435,17 +434,7 @@ export async function decide(req: DecideRequest): Promise<DecisionResult | null>
       req.role === "payer" ? sellerHostOfCanonicalUrl(loaded.endpoint.canonicalUrl) : null;
     let refundsP: Promise<RefundStats | null> | null = null;
     if (req.role === "payer" && refundsHost) {
-      if (req.missTiming) {
-        refundsP = runDbMissTimingPhase("decide_refunds", () => readRefundStatsCached(refundsHost))
-          .then(({ value, slice }) => {
-            req.missTiming!.db_decide_refunds_q = slice.q;
-            req.missTiming!.db_decide_refunds_qn = slice.qn;
-            return value;
-          })
-          .catch(() => null);
-      } else {
-        refundsP = prefetchSellerRefundStats(loaded.endpoint.canonicalUrl);
-      }
+      refundsP = prefetchSellerRefundStats(loaded.endpoint.canonicalUrl, req.missTiming);
     }
     const waitRegistryOf = async (): Promise<RegistryStatus> => {
       const tWait = req.missTiming ? performance.now() : 0;
