@@ -9,7 +9,8 @@ import { safeJsonLd } from "@/lib/util/json-ld";
 import { getObservatoryStatsCached } from "@/lib/observatory/cached-reads";
 import { publicChainLabel } from "@/lib/observatory/chains";
 import { chainHeldLines } from "@/lib/observatory/chain-page-words";
-import { getIndexableHostsOnChainCached, SELLER_INDEX_DELIVERY_WINDOW_DAYS } from "@/lib/sellers/seller-index";
+import { SELLER_INDEX_DELIVERY_WINDOW_DAYS } from "@/lib/sellers/seller-index";
+import { chainSellersPath, getChainSellerRosterForSlug } from "@/lib/sellers/chain-roster";
 
 export function generateStaticParams() {
   return GUIDE_CHAINS.map((c) => ({ slug: c.slug }));
@@ -51,7 +52,8 @@ export default async function ChainGuidePage({ params }: { params: Promise<Param
       )
     : undefined;
   const path = `/x402/chains/${chain.slug}`;
-  const indexableHosts = await getIndexableHostsOnChainCached(chain.caip2).catch(() => [] as string[]);
+  const roster = await getChainSellerRosterForSlug(chain.slug).catch(() => null);
+  const rosterRows = roster?.rows ?? [];
   const article = articleJsonLd({
     headline: chain.headline,
     description: chain.description,
@@ -148,29 +150,23 @@ export default async function ChainGuidePage({ params }: { params: Promise<Param
           <span className="sec-no">2.</span>
           <span>Sellers with a delivered vet402 purchase on {chain.publicName}</span>
         </h2>
-        {indexableHosts.length > 0 ? (
-          <>
-            <p className="doc-p">
-              Hosts below delivered at least once on {chain.publicName} and pass the same index gate as{" "}
-              <Link href="/sellers" className="doc-link">
-                /sellers
-              </Link>{" "}
-              (delivery in the last {SELLER_INDEX_DELIVERY_WINDOW_DAYS} days or a signed payee claim). vet402 does not list hosts that failed to
-              deliver or that do not pass that gate.
-            </p>
-            <ul className="mt-4 columns-1 gap-x-8 sm:columns-2 lg:columns-3">
-              {indexableHosts.map((host) => (
-                <li key={host} className="break-inside-avoid pb-2">
-                  <Link href={`/x402/sellers/${encodeURIComponent(host)}`} className="doc-link font-mono text-sm">
-                    {host}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </>
+        {rosterRows.length > 0 ? (
+          <p className="doc-p">
+            This read lists {rosterRows.length.toLocaleString("en-US")} host{rosterRows.length === 1 ? "" : "s"} with a delivered
+            vet402 purchase on {chain.publicName} in the last {SELLER_INDEX_DELIVERY_WINDOW_DAYS} days and the same index gate as{" "}
+            <Link href="/sellers" className="doc-link">
+              /sellers
+            </Link>
+            . vet402 does not name hosts that failed to deliver or that do not pass that gate. The full table is on{" "}
+            <Link href={chainSellersPath(chain.slug)} className="doc-link">
+              x402 sellers on {chain.publicName}
+            </Link>
+            .
+          </p>
         ) : (
           <p className="doc-p">
-            This read lists no sellers on {chain.publicName} that both delivered to vet402 and pass the index gate.
+            This read lists no sellers on {chain.publicName} that both delivered to vet402 in the last {SELLER_INDEX_DELIVERY_WINDOW_DAYS}{" "}
+            days and pass the index gate.
           </p>
         )}
 

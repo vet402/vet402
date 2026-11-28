@@ -647,6 +647,58 @@ export async function readHostsWithDeliveredOnNetwork(db: Db, networkFilter: str
   return new Set(rowsOf(raw).map((r) => String(r.host)));
 }
 
+/** Hosts with a delivered purchase on a chain inside the rolling day window. */
+export async function readHostsWithDeliveredOnNetworkInWindow(
+  db: Db,
+  networkFilter: string,
+  days: number,
+): Promise<Set<string>> {
+  const ids = networkFilterIds(networkFilter);
+  if (ids.length === 0) return new Set();
+  const networkList = sql.join(ids.map((id) => sql`${id}`), sql`, `);
+  const raw = await db.execute(sql`
+    SELECT DISTINCT ${HOST_SQL} AS host
+    FROM x402_l1_purchases pu
+    JOIN x402_endpoints e ON e.id = pu.endpoint_id
+    WHERE ${sql.raw(deliveredPredicate("pu"))}
+      AND pu.network IN (${networkList})
+      AND pu.attempted_at >= now() - make_interval(days => ${days}::int)`);
+  return new Set(rowsOf(raw).map((r) => String(r.host)));
+}
+
+export type ChainDeliveredStatsRow = {
+  host: string;
+  lastDeliveredAt: string;
+  deliveredCount: number;
+};
+
+/** Per-host delivered counts on one chain inside the rolling window (for /x402/chains/{slug}/sellers). */
+export async function readChainDeliveredStatsOnNetwork(
+  db: Db,
+  networkFilter: string,
+  days: number,
+): Promise<ChainDeliveredStatsRow[]> {
+  const ids = networkFilterIds(networkFilter);
+  if (ids.length === 0) return [];
+  const networkList = sql.join(ids.map((id) => sql`${id}`), sql`, `);
+  const raw = await db.execute(sql`
+    SELECT ${HOST_SQL} AS host,
+           max(pu.attempted_at) AS last_delivered_at,
+           count(*)::int AS delivered_count
+    FROM x402_l1_purchases pu
+    JOIN x402_endpoints e ON e.id = pu.endpoint_id
+    WHERE ${sql.raw(deliveredPredicate("pu"))}
+      AND pu.network IN (${networkList})
+      AND pu.attempted_at >= now() - make_interval(days => ${days}::int)
+    GROUP BY 1
+    ORDER BY max(pu.attempted_at) DESC, ${HOST_SQL} ASC`);
+  return rowsOf(raw).map((r) => ({
+    host: String(r.host),
+    lastDeliveredAt: new Date(String(r.last_delivered_at)).toISOString(),
+    deliveredCount: Number(r.delivered_count ?? 0),
+  }));
+}
+
 /** Host name taken from verified_payees.url with the same rule as sellerHostOf (SQL side). */
 const PAYEE_CLAIM_URL_HOST = `lower(regexp_replace(
   split_part(regexp_replace(regexp_replace(vp.url, '^https?://', ''), '^//', ''), '/', 1),

@@ -274,6 +274,45 @@ async function sellerIndexSitemapEntries(): Promise<MetadataRoute.Sitemap> {
 
 const REV_2026_11_27 = "2026-11-27";
 
+/** /x402/chains/{slug}/sellers for lanes with at least one indexable host in the rolling window. */
+async function chainSellerSitemapEntries(): Promise<MetadataRoute.Sitemap> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const { getChainSellerRosterCached } = await import("@/lib/sellers/chain-roster");
+    const { rosterAsOfDay } = await import("@/lib/sellers/chain-roster");
+    const { chainSellersPath } = await import("@/lib/sellers/chain-roster");
+    const entries: MetadataRoute.Sitemap = [];
+    await Promise.race([
+      (async () => {
+        for (const chain of GUIDE_CHAINS) {
+          const roster = await getChainSellerRosterCached(chain.caip2).catch(() => null);
+          if (!roster || roster.rows.length === 0) continue;
+          const day = rosterAsOfDay(roster);
+          entries.push({
+            url: `${SITE_URL}${chainSellersPath(chain.slug)}`,
+            lastModified: day ?? REV_2026_11_28,
+            changeFrequency: "daily",
+            priority: 0.55,
+          });
+        }
+      })(),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error("chain seller sitemap read timeout")), REPUTATION_SITEMAP_READ_MS);
+      }),
+    ]);
+    return entries;
+  } catch {
+    return [];
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  return [...(await coreStaticSitemap()), ...(await reputationSitemapEntries()), ...(await sellerIndexSitemapEntries())];
+  return [
+    ...(await coreStaticSitemap()),
+    ...(await reputationSitemapEntries()),
+    ...(await sellerIndexSitemapEntries()),
+    ...(await chainSellerSitemapEntries()),
+  ];
 }
