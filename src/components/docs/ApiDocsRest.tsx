@@ -301,20 +301,22 @@ npm i @vet402/mcp-server   # local MCP tool (hosted entry: https://vet402.com/mc
             うち JS は webhook の HMAC 検証だけ）。「30分でデモに組み込めるか」を
             計測したペルソナは、インストール行の次に何を書けばいいかをサイトから
             得られず npm ページへ出ていった。npm README の完動例をここへ引く。 */}
-        <h3 className="text-[1.0625rem] font-semibold text-brand-deep">SDK: read a score</h3>
+        <h3 className="text-[1.0625rem] font-semibold text-brand-deep">SDK: read a deprecated score (migration only)</h3>
         <p className="text-[0.84375rem] text-brand">
-          <code>apiUrl</code> defaults to the hosted API, so a key is the only thing you have to
-          supply. Copy this into a <code>.mjs</code> file and it runs.
+          The 0 to 100 wallet, agent, and payee score calls were deprecated in September 2026. New
+          integrations should use <code>resolve</code> and <code>getDecision</code> below. The score calls remain for
+          callers migrating off them. <code>apiUrl</code> defaults to the hosted API; a key is required for these score
+          methods.
         </p>
         <CodeBlock
-          label="TypeScript: read a wallet score and a payee score with @vet402/sdk"
+          label="TypeScript: read a wallet score and a payee score with @vet402/sdk (deprecated)"
           code={`import { createVouchClient } from "@vet402/sdk";
 
 const vouch = createVouchClient({ apiKey: process.env.VOUCH_API_KEY });
 
 // Seller side — "should I accept payment from this wallet?"
 const seller = await vouch.getWalletScore("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045");
-console.log(seller.trustScore, seller.recommendation); // 0–100 and ALLOW | WARN | BLOCK — live values
+console.log(seller.trustScore, seller.recommendation); // 0-100 and ALLOW | WARN | BLOCK (deprecated)
 
 // Buyer side — "should my agent pay this wallet?"
 const payee = await vouch.getPayeeScore("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045");
@@ -549,6 +551,19 @@ app.use("/api/paid", createExpressGate({
           同じ場所で言わないと「WARN は通るのだろう」と読まれる。 */}
       <DocBodySection id="score-bands" title="Score bands (agent, wallet and payee scores)" className="space-y-3">
         <p className="text-[0.84375rem] text-brand">
+          These bands apply only to the deprecated September 2026 0 to 100 score endpoints (
+          <code className="text-brand-deep">GET /api/v1/wallets/&#123;address&#125;/score</code>,{" "}
+          <code className="text-brand-deep">GET /api/v1/agents/&#123;agentId&#125;/score</code>,{" "}
+          <code className="text-brand-deep">GET /api/v1/payees/&#123;address&#125;/score</code>). For an x402 seller
+          check before paying, use{" "}
+          <code className="text-brand-deep">GET /api/v1/check?url=</code> or{" "}
+          <code className="text-brand-deep">GET /api/v1/resources/&#123;id&#125;/decision</code> (see{" "}
+          <a href="#verdicts" className="doc-link">
+            Decision verdicts
+          </a>
+          ).
+        </p>
+        <p className="text-[0.84375rem] text-brand">
           Every scored response carries a numeric score and a{" "}
           <code className="text-brand-deep">recommendation</code>. The bands are fixed and the same
           for the agent, wallet and payee engines:
@@ -775,10 +790,14 @@ app.use("/api/paid", createExpressGate({
         <ApiEndpointsSection />
       </DocBodySection>
 
-      <DocBodySection id="score-breakdown" title="Score breakdown" className="space-y-3">
+      <DocBodySection id="score-breakdown" title="Score breakdown (deprecated scores only)" className="space-y-3">
         {/* 2026-08-06 N-21: explainability. Integrators kept asking "why this
             number" — the breakdown answers it in the response itself, so a
             compliance log can record the arithmetic, not just the verdict. */}
+        <p className="text-[0.84375rem] text-brand">
+          The breakdown documents the deprecated 0 to 100 score endpoints only. It does not describe{" "}
+          <code className="text-brand-deep">GET /api/v1/resources/&#123;id&#125;/decision</code>.
+        </p>
         <p className="text-[0.84375rem] text-brand">
           Every scored verdict (agent and wallet endpoints, and each element of a
           batch) carries a <code className="text-brand-deep">breakdown</code>{" "}

@@ -67,7 +67,7 @@ ${SITE_URL}/x402/report/2026-11
   Decision and facts documents store conform, mismatch, undeclared, or not_checked: conform is written when the re-read L2 value (l2_reading) of the latest delivery is match, mismatch is written when that re-read value is mismatch (an older mismatch row with no recorded reason is re-read first, and a cut body reads not_checked), and in the other cases the decision word is not_checked when the current declaration names output (a required key or an example property) or when the purchase row of the latest delivery recorded a declaration and its re-read value is not_checked, and undeclared when neither holds.
 - L3 Quality — is the content any good? Not built. No L3 opinion is published.
 
-A result is labelled by the level that produced it and never moves up a level. The 0–100 ALLOW / WARN / BLOCK score is a different, older API and is never reported as an L0–L2 result.
+A result is labelled by the level that produced it and never moves up a level. The 0 to 100 ALLOW, WARN, or BLOCK score API was deprecated in September 2026 and is never reported as an L0 to L2 result. Use GET /api/v1/check?url= or GET /api/v1/resources/{resourceId}/decision for a seller check.
 
 ## Vocabulary (published methodology)
 

@@ -467,6 +467,41 @@ claims:
     check: null
     why_unverifiable: "キー必須または POST の面で、読み取り専用・キー無しのカナリアからは判定できない。契約は tests/openapi-route-parity.test.ts と tests/openapi-schema-parity.test.ts が守る"
     verified_at: 2026-09-04
+  - id: api_sdk_read_a_deprecated_score
+    surface: src/components/docs/ApiDocsRest.tsx
+    quote: "The 0 to 100 wallet, agent, and payee score calls were deprecated in September 2026"
+    means: "2026-09-29 以降のスコア廃止方針と一致する編集者向けの案内（移行先は check と decision）"
+    check: null
+    why_unverifiable: "廃止日と移行先は src/lib/api/score-deprecation.ts と tests/f8-version-facilitator.test.ts が固定する"
+    verified_at: 2026-11-29
+  - id: api_score_bands_deprecated_september_2026
+    surface: src/components/docs/ApiDocsRest.tsx
+    quote: "These bands apply only to the deprecated September 2026 0 to 100 score endpoints"
+    means: "0-100 スコア帯の説明が現行の判定 API と混同されないよう、対象エンドポイントだけに限定する"
+    check: null
+    why_unverifiable: "対象パスは本ファイルと openapi.yaml に列挙。判定の正典は decision ルート"
+    verified_at: 2026-11-29
+  - id: api_score_breakdown_deprecated_scores_only
+    surface: src/components/docs/ApiDocsRest.tsx
+    quote: "The breakdown documents the deprecated 0 to 100 score endpoints only"
+    means: "breakdown オブジェクトは廃止スコア応答専用で、decision 応答には無い"
+    check: null
+    why_unverifiable: "応答形は tests/openapi-schema-parity.test.ts と decide 実装が守る"
+    verified_at: 2026-11-29
+  - id: api_sdk_read_deprecated_score_heading
+    surface: src/components/docs/ApiDocsRest.tsx
+    quote: "SDK: read a deprecated score (migration only)"
+    means: "SDK 節の見出しが旧スコア呼び出しは移行用だけと明示する"
+    check: null
+    why_unverifiable: "見出し文言は tests/seo-aeo-af-1129.test.ts が固定する"
+    verified_at: 2026-11-29
+  - id: api_score_breakdown_section_heading
+    surface: src/components/docs/ApiDocsRest.tsx
+    quote: "Score breakdown (deprecated scores only)"
+    means: "breakdown 節の見出しが廃止スコア専用と明示する"
+    check: null
+    why_unverifiable: "見出し文言は tests/seo-aeo-af-1129.test.ts が固定する"
+    verified_at: 2026-11-29
   - id: census_indexed_since_reports_how_far_back
     surface: src/lib/docs/api-endpoints-data.tsx
     quote: "indexed_since reports how far back the index actually reaches, overall and per chain"
