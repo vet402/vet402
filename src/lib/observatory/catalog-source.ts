@@ -455,7 +455,7 @@ export async function fetchFullCatalog(
         return;
       }
       if (got.items.length === 0) return;
-      if (sleepMs > 0) await sleep(sleepMs);
+      if (sleepMs > 0) await sleepFn(sleepMs);
     }
   };
   await Promise.all(Array.from({ length: Math.max(1, Math.floor(concurrency)) }, worker));
