@@ -9,7 +9,7 @@
     "build": "tsc && chmod +x dist/index.js",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
-    "test": "npm run build && node --test 'test/*.test.mjs'"
+    "test": "npm run build && node --test --test-force-exit 'test/*.test.mjs'"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
