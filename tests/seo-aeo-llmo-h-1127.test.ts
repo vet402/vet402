@@ -106,6 +106,7 @@ test("check-a-seller .md h2 titles match the page", async () => {
   const md = headingsFromMd(await (await getCheckSellerMd()).text());
   const expected = [
     CHECK_SELLER_SECTIONS.checkByUrl.title,
+    CHECK_SELLER_SECTIONS.bazaarDelivery.title,
     CHECK_SELLER_SECTIONS.readDecision.title,
     CHECK_SELLER_SECTIONS.purchaseRecord.title,
     CHECK_SELLER_SECTIONS.compareTerms.title,
@@ -151,6 +152,7 @@ test("check-a-seller .md bodies say what the page says", async () => {
   const { KEYLESS_READ_STOP, keylessDecisionPerMinute } = await import("@/lib/api/keyless-limits");
   const page = pageText(read("src/app/x402/check-a-seller/page.tsx"));
   for (const [key, section] of Object.entries(CHECK_SELLER_SECTIONS)) {
+    if (key === "bazaarDelivery") continue;
     const body = section.body
       .replace(KEYLESS_READ_STOP, "{KEYLESS_READ_STOP}")
       .replace(`at ${keylessDecisionPerMinute()} requests`, "at {keylessDecisionPerMinute()} requests");

@@ -80,6 +80,12 @@ export default async function CheckSellerPage() {
 
         <h2 className="sec-head">
           <span className="sec-no">2.</span>
+          <span>{CHECK_SELLER_SECTIONS.bazaarDelivery.title}</span>
+        </h2>
+        <p className="doc-p">{CHECK_SELLER_SECTIONS.bazaarDelivery.body}</p>
+
+        <h2 className="sec-head">
+          <span className="sec-no">3.</span>
           <span>{CHECK_SELLER_SECTIONS.readDecision.title}</span>
         </h2>
         <p className="doc-p">
@@ -91,7 +97,7 @@ export default async function CheckSellerPage() {
         </p>
 
         <h2 className="sec-head">
-          <span className="sec-no">3.</span>
+          <span className="sec-no">4.</span>
           <span>{CHECK_SELLER_SECTIONS.purchaseRecord.title}</span>
         </h2>
         <p className="doc-p">
@@ -112,7 +118,7 @@ export default async function CheckSellerPage() {
         </p>
 
         <h2 className="sec-head">
-          <span className="sec-no">4.</span>
+          <span className="sec-no">5.</span>
           <span>{CHECK_SELLER_SECTIONS.compareTerms.title}</span>
         </h2>
         <p className="doc-p">
@@ -123,7 +129,9 @@ export default async function CheckSellerPage() {
         </p>
         <p className="doc-p">
           The recommendation records past purchases. vet402 does not insure a payment, hold customer funds, or refund
-          one. The 0 to 100 score is an older API. A score is a separate signal from an L0 to L2 result, as the{" "}
+          one. The 0 to 100 wallet and agent score APIs were deprecated in September 2026; for a seller check, use{" "}
+          <code>GET /api/v1/check?url=</code> or <code>GET /api/v1/resources/{"{resourceId}"}/decision</code>. A score
+          is a separate signal from an L0 to L2 result, as the{" "}
           <Link href="/faq" className="doc-link">
             FAQ
           </Link>{" "}
