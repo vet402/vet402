@@ -11,6 +11,7 @@ import {
   HOST_BADGE_WINDOW_DAYS,
   readHostsWithDeliveredInWindow,
   readHostsWithDeliveredOnNetwork,
+  readHostsWithDeliveredOnNetworkInWindow,
   readHostsWithPayeeClaim,
 } from "./reader";
 
@@ -102,6 +103,17 @@ export async function readIndexableHostsOnNetwork(db: Db, networkFilter: string)
   const [deliveredOnNetwork, deliveredHosts, claimedHosts] = await Promise.all([
     readHostsWithDeliveredOnNetwork(db, networkFilter),
     readHostsWithDeliveredInWindow(db, SELLER_INDEX_DELIVERY_WINDOW_DAYS),
+    readHostsWithPayeeClaim(db),
+  ]);
+  const candidates = [...deliveredOnNetwork].sort((a, b) => a.localeCompare(b));
+  return selectIndexableSellerHosts(candidates, deliveredHosts, claimedHosts);
+}
+
+/** Same I4 gate as readIndexableHostsOnNetwork, with delivered-on-chain limited to the rolling window. */
+export async function readIndexableHostsOnNetworkInWindow(db: Db, networkFilter: string, days: number): Promise<string[]> {
+  const [deliveredOnNetwork, deliveredHosts, claimedHosts] = await Promise.all([
+    readHostsWithDeliveredOnNetworkInWindow(db, networkFilter, days),
+    readHostsWithDeliveredInWindow(db, days),
     readHostsWithPayeeClaim(db),
   ]);
   const candidates = [...deliveredOnNetwork].sort((a, b) => a.localeCompare(b));
