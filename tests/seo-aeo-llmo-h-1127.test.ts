@@ -143,7 +143,11 @@ test("methodology page h2 titles and 60-second summary match the shared copy the
   );
   assert.deepEqual(h2, [...METHODOLOGY_H2]);
   const { METHODOLOGY_IN_60 } = await import("@/lib/observatory/methodology-copy");
-  assert.ok(pageText(src).includes(METHODOLOGY_IN_60.replace(/\.$/, "")), "In 60 seconds drifted from METHODOLOGY_IN_60");
+  assert.ok(src.includes("METHODOLOGY_IN_60"), "In 60 seconds must render from METHODOLOGY_IN_60");
+  assert.ok(
+    pageText(await (await getMethodologyMd()).text()).includes(METHODOLOGY_IN_60.replace(/\.$/, "")),
+    "methodology .md drifted from METHODOLOGY_IN_60",
+  );
   const md = await (await getMethodologyMd()).text();
   assert.match(md, /This Markdown is a summary/, "methodology.md must say it is a summary");
 });
