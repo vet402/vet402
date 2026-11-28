@@ -20,6 +20,22 @@ export type CheckSellerMissTimingMs = {
   db_decide_q?: number;
   db_decide_qn?: number;
   db_decide_app?: number;
+  /** decide: registryStatusFor の開始から完了まで（loadSellerFacts と並列）。 */
+  db_decide_registry_total?: number;
+  /** decide: finishDecide 内で registryOf() を待った時間。 */
+  db_decide_registry_wait?: number;
+  /** decide: registry の問い合わせ合計（ms）。 */
+  db_decide_registry_q?: number;
+  /** decide: registry の問い合わせ本数。 */
+  db_decide_registry_qn?: number;
+  /** decide: refundsP の解決を待った時間。 */
+  db_decide_refunds_wait?: number;
+  /** decide: 返金集計の問い合わせ合計（ms）。 */
+  db_decide_refunds_q?: number;
+  /** decide: 返金集計の問い合わせ本数。 */
+  db_decide_refunds_qn?: number;
+  /** decide: buildDecision の CPU 時間。 */
+  db_decide_build?: number;
   /** 応答用の最新 L1 数件。 */
   db_l1_recent?: number;
   /** verified_terms が無いときの facts.payees 取得（check と同じ 1 回から取れれば 0）。 */
@@ -74,6 +90,14 @@ export function formatPresignCheckTiming(
       durLine("db_decide_q", miss.db_decide_q),
       durLine("db_decide_qn", miss.db_decide_qn),
       durLine("db_decide_app", miss.db_decide_app),
+      durLine("db_decide_registry_total", miss.db_decide_registry_total),
+      durLine("db_decide_registry_wait", miss.db_decide_registry_wait),
+      durLine("db_decide_registry_q", miss.db_decide_registry_q),
+      durLine("db_decide_registry_qn", miss.db_decide_registry_qn),
+      durLine("db_decide_refunds_wait", miss.db_decide_refunds_wait),
+      durLine("db_decide_refunds_q", miss.db_decide_refunds_q),
+      durLine("db_decide_refunds_qn", miss.db_decide_refunds_qn),
+      durLine("db_decide_build", miss.db_decide_build),
       durLine("db_l1_recent", miss.db_l1_recent),
       durLine("terms_payees", miss.terms_payees),
     ]) {

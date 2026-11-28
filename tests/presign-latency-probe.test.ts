@@ -16,13 +16,15 @@ const row = (url: string, delivered: number, method = "GET") => ({ url, method, 
 
 test("presign probe: parseServerTimingDurs reads every dur name without changing presign parsing", () => {
   const header =
-    'cache;dur=525.2;desc="fresh", db_resolve;dur=281.4, db_resolve_q;dur=200.0, db_resolve_qn;dur=2.0, presign;dur=667.9';
+    'cache;dur=525.2;desc="fresh", db_resolve;dur=281.4, db_resolve_q;dur=200.0, db_resolve_qn;dur=2.0, db_decide_registry_total;dur=400.0, db_decide_build;dur=5.0, presign;dur=667.9';
   assert.deepEqual(parseServerTiming(header), { presignMs: 667.9, cachePath: "fresh" });
   assert.deepEqual(parseServerTimingDurs(header), {
     cache: 525.2,
     db_resolve: 281.4,
     db_resolve_q: 200,
     db_resolve_qn: 2,
+    db_decide_registry_total: 400,
+    db_decide_build: 5,
     presign: 667.9,
   });
 });

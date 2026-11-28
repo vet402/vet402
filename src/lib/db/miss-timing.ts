@@ -3,7 +3,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { takeDbClientInitMs } from "@/lib/db/client";
 
-export type DbMissTimingPhase = "resolve" | "decide";
+export type DbMissTimingPhase = "resolve" | "decide" | "decide_registry" | "decide_refunds";
 
 export type DbMissTimingSlice = {
   conn?: number;

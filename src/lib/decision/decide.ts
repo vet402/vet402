@@ -26,7 +26,13 @@ import { rowsOf } from "@/lib/settlements/upsert";
 import { l2EvidenceOf, loadSellerFacts, type SellerFactsLoaded } from "./seller-facts";
 import { loadBuyerFacts } from "./buyer-facts";
 import { decidePayer, decidePayee, l1BasisOf, DECISION_RULES_VERSION, type L1Basis, type Recommendation, type PayerOptions } from "./rules";
-import { attachSellerRefundsToDecision, prefetchSellerRefundStats, type DecisionHostRefunds } from "./seller-refunds";
+import {
+  attachSellerRefundsToDecision,
+  prefetchSellerRefundStats,
+  sellerHostOfCanonicalUrl,
+  type DecisionHostRefunds,
+} from "./seller-refunds";
+import type { RefundStats } from "@/lib/sellers/refunds";
 import { evidenceAgeOf, explainReasons, type EvidenceAge, type ReasonExplanation } from "./reason-explain";
 import { isSpendingHalted } from "@/lib/observatory/kill-switch";
 import { assertEvidenceContract, vet402Evidence } from "./evidence";
@@ -398,12 +404,20 @@ export async function decide(req: DecideRequest): Promise<DecisionResult | null>
 
   // registry は売り手の読みと重ねて読み始める（2026-11-28 依頼 W）。失敗は「読んだ所で投げる」ため、
   // 結果を包んで保持する（読む前に他が投げても未処理の reject にしない。出品が無ければ待たずに null）。
-  const registryP: Promise<{ ok: true; value: RegistryStatus } | { ok: false; error: unknown }> = registryStatusFor(
-    req.observatoryId,
-  ).then(
-    (value) => ({ ok: true as const, value }),
-    (error: unknown) => ({ ok: false as const, error }),
-  );
+  const tRegistryStart = req.missTiming ? performance.now() : 0;
+  const registryP: Promise<{ ok: true; value: RegistryStatus } | { ok: false; error: unknown }> = req.missTiming
+    ? runDbMissTimingPhase("decide_registry", () => registryStatusFor(req.observatoryId))
+        .then(({ value, slice }) => {
+          req.missTiming!.db_decide_registry_total = performance.now() - tRegistryStart;
+          req.missTiming!.db_decide_registry_q = slice.q;
+          req.missTiming!.db_decide_registry_qn = slice.qn;
+          return { ok: true as const, value };
+        })
+        .catch((error: unknown) => ({ ok: false as const, error }))
+    : registryStatusFor(req.observatoryId).then(
+        (value) => ({ ok: true as const, value }),
+        (error: unknown) => ({ ok: false as const, error }),
+      );
   const registryOf = async (): Promise<RegistryStatus> => {
     const r = await registryP;
     if (!r.ok) throw r.error;
@@ -416,7 +430,18 @@ export async function decide(req: DecideRequest): Promise<DecisionResult | null>
   const subject = subjectOf(loaded);
 
   const finishDecide = async (): Promise<DecisionResult> => {
-    const refundsP = req.role === "payer" ? prefetchSellerRefundStats(loaded.endpoint.canonicalUrl) : null;
+    const refundsHost =
+      req.role === "payer" ? sellerHostOfCanonicalUrl(loaded.endpoint.canonicalUrl) : null;
+    let refundsP: Promise<RefundStats | null> | null = null;
+    if (req.role === "payer" && refundsHost) {
+      refundsP = prefetchSellerRefundStats(loaded.endpoint.canonicalUrl, req.missTiming);
+    }
+    const waitRegistryOf = async (): Promise<RegistryStatus> => {
+      const tWait = req.missTiming ? performance.now() : 0;
+      const registry = await registryOf();
+      if (req.missTiming) req.missTiming.db_decide_registry_wait = performance.now() - tWait;
+      return registry;
+    };
     if (req.role === "payer") {
       let score: { trustScore: number; recommendation: Recommendation } | null = null;
       const payTo = loaded.endpoint.payTo;
@@ -429,44 +454,55 @@ export async function decide(req: DecideRequest): Promise<DecisionResult | null>
           score = null; // 移行用の併記が取れなくても判定は落とさない
         }
       }
-      const registry = await registryOf();
-      return attachSellerRefundsToDecision(
-        buildDecision({
-          role: "payer",
-          subject,
-          spendingHalted: halt.halted,
-          facts: loaded.facts,
-          options: {
-            callerDialect: req.callerDialect,
-            allowWithoutL1: req.allowWithoutL1,
-            operatorBlacklist: req.operatorBlacklist,
-            // 2026-09-29: /sellers と同じ規則で、売り手の不履行として数えない試行（vet402 の側・保留・課金なし）。
-            l1NotCounted: loaded.l1NotCounted,
-            // 2026-09-29 再監査: l0 が unverified のとき、何が測れなかったかの下位コードを添える（判定は変えない）。
-            l0UnverifiedCause: loaded.l0UnverifiedCause ?? null,
-            // 2026-09-29.2: 支払い済み未配達・最新の試行・鮮度の材料。渡さないと facts から保守的に作る（本番は必ず渡す）。
-            l1Timeline: loaded.l1Timeline,
-            l2ConformNoRequiredKeys: loaded.l2ConformNoRequiredKeys,
-          },
-          score,
-          registry,
-          notAttemptedReason: notAttemptedReasonOf(halt.halted, loaded.lastAttempt.status),
-          verifiedTerms: loaded.verifiedTerms ?? null,
-          verifiedPayToByNetwork: loaded.verifiedPayToByNetwork ?? [],
-          l2ContentType: loaded.l2ContentType,
-          l2PurchaseId: loaded.l2PurchaseId,
-        }),
-        loaded.endpoint.canonicalUrl,
-        undefined,
-        refundsP,
-      );
+      const registry = await waitRegistryOf();
+      const tBuild = req.missTiming ? performance.now() : 0;
+      const built = buildDecision({
+        role: "payer",
+        subject,
+        spendingHalted: halt.halted,
+        facts: loaded.facts,
+        options: {
+          callerDialect: req.callerDialect,
+          allowWithoutL1: req.allowWithoutL1,
+          operatorBlacklist: req.operatorBlacklist,
+          // 2026-09-29: /sellers と同じ規則で、売り手の不履行として数えない試行（vet402 の側・保留・課金なし）。
+          l1NotCounted: loaded.l1NotCounted,
+          // 2026-09-29 再監査: l0 が unverified のとき、何が測れなかったかの下位コードを添える（判定は変えない）。
+          l0UnverifiedCause: loaded.l0UnverifiedCause ?? null,
+          // 2026-09-29.2: 支払い済み未配達・最新の試行・鮮度の材料。渡さないと facts から保守的に作る（本番は必ず渡す）。
+          l1Timeline: loaded.l1Timeline,
+          l2ConformNoRequiredKeys: loaded.l2ConformNoRequiredKeys,
+        },
+        score,
+        registry,
+        notAttemptedReason: notAttemptedReasonOf(halt.halted, loaded.lastAttempt.status),
+        verifiedTerms: loaded.verifiedTerms ?? null,
+        verifiedPayToByNetwork: loaded.verifiedPayToByNetwork ?? [],
+        l2ContentType: loaded.l2ContentType,
+        l2PurchaseId: loaded.l2PurchaseId,
+      });
+      if (req.missTiming) req.missTiming.db_decide_build = performance.now() - tBuild;
+      if (refundsP && req.missTiming) {
+        const tRefundsWait = performance.now();
+        await refundsP;
+        req.missTiming.db_decide_refunds_wait = performance.now() - tRefundsWait;
+      }
+      return attachSellerRefundsToDecision(built, loaded.endpoint.canonicalUrl, undefined, refundsP);
     }
     const facts = await loadBuyerFacts(req.payerId);
-    const registry = await registryOf();
-    return attachSellerRefundsToDecision(
-      buildDecision({ role: "payee", subject, payer: req.payerId, facts, operatorBlacklist: req.operatorBlacklist, registry, spendingHalted: halt.halted }),
-      loaded.endpoint.canonicalUrl,
-    );
+    const registry = await waitRegistryOf();
+    const tBuild = req.missTiming ? performance.now() : 0;
+    const built = buildDecision({
+      role: "payee",
+      subject,
+      payer: req.payerId,
+      facts,
+      operatorBlacklist: req.operatorBlacklist,
+      registry,
+      spendingHalted: halt.halted,
+    });
+    if (req.missTiming) req.missTiming.db_decide_build = performance.now() - tBuild;
+    return attachSellerRefundsToDecision(built, loaded.endpoint.canonicalUrl);
   };
 
   let result: DecisionResult;
