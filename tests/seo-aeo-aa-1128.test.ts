@@ -41,10 +41,10 @@ test("refunds page does not hardcode 2026-11-09 snapshot counts", () => {
   assert.match(src, /getObservatoryStatsCached/);
 });
 
-test("chain guide uses I4 gate for seller host tables", () => {
+test("chain guide links to chain seller roster with I4-backed read", () => {
   const slug = read("src/app/x402/chains/[slug]/page.tsx");
-  assert.match(slug, /getIndexableHostsOnChainCached/);
-  assert.match(slug, /\/x402\/sellers\//);
+  assert.match(slug, /getChainSellerRosterForSlug/);
+  assert.match(slug, /chainSellersPath/);
   assert.doesNotMatch(slug, /2026-11-16/);
 });
 
