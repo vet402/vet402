@@ -23,6 +23,6 @@ export const CHECK_SELLER_SECTIONS = {
   compareTerms: {
     title: "Compare the terms",
     body:
-      "verified_terms carries pay_to, asset, amount, network, and scheme from the last purchase whose delivery vet402 confirmed. Compare those fields with the 402 in hand. A higher amount, or a different recipient, asset, network, or scheme, is a different offer from the one that was delivered. On XRPL, verified_terms is null. The recommendation records past purchases. vet402 does not insure a payment, hold customer funds, or refund one. The 0 to 100 wallet and agent score APIs were deprecated in September 2026; for a seller check, use GET /api/v1/check?url= or GET /api/v1/resources/{resourceId}/decision. A score is a separate signal from an L0 to L2 result, as the FAQ states.",
+      "verified_terms carries pay_to, asset, amount, network, and scheme from the last purchase whose delivery vet402 confirmed. Compare those fields with the 402 in hand. A higher amount, or a different recipient, asset, network, or scheme, is a different offer from the one that was delivered. On XRPL, verified_terms is null. The recommendation records past purchases. vet402 does not insure a payment, hold customer funds, or refund one. The 0 to 100 payee, wallet, and agent score APIs were deprecated in September 2026. For a seller check, use GET /api/v1/check?url= or GET /api/v1/resources/{resourceId}/decision. A score is a separate signal from an L0 to L2 result, as the FAQ states.",
   },
 } as const;

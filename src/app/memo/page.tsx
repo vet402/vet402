@@ -569,10 +569,13 @@ export default async function Memo() {
         <div className="mt-8 flex gap-4">
           <span className="w-[4ch] shrink-0 text-brand-lift">2.1</span>
           <p className="min-w-0 max-w-[64ch] text-brand">
-            The trust score this API returns today (0&ndash;100, banded{" "}
-            <span className="whitespace-nowrap">ALLOW / WARN / BLOCK</span>) predates these
-            levels. The resource decision reads L0&ndash;L2 today. The score stays available to
-            API and SDK callers. A score is never reported as an L0&ndash;L2 result.{" "}
+            The 0&ndash;100 payee, wallet, and agent score APIs (banded{" "}
+            <span className="whitespace-nowrap">ALLOW / WARN / BLOCK</span>) were deprecated in
+            2026-09. They are not these L0&ndash;L2 levels. The resource decision reads
+            L0&ndash;L2 today and returns ALLOW, WARN, or BLOCK from those records. For integration,
+            use <code>GET /api/v1/check?url=</code> or{" "}
+            <code>GET /api/v1/resources/&#123;resourceId&#125;/decision</code>. A score is never
+            reported as an L0&ndash;L2 result.{" "}
             <Link href="/docs/api#score-breakdown" className="doc-link">
               How the score is composed
             </Link>

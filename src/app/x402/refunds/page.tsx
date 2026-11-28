@@ -16,8 +16,7 @@ import { getObservatoryStatsCached } from "@/lib/observatory/cached-reads";
 const REFUNDS_PATH = "/x402/refunds";
 const REFUNDS_UPDATED = "2026-11-12";
 
-const REFUNDS_TITLE =
-  "x402 refunds: what happens when a payment fails or the seller does not deliver";
+const REFUNDS_TITLE = "x402 refunds: failed payment and non-delivery";
 const REFUNDS_DESCRIPTION =
   "Whether an x402 refund is possible depends on the payment scheme. How failed payments and empty responses show up in vet402's purchase ledger, and how to check a seller first.";
 

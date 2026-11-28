@@ -129,9 +129,9 @@ export default async function CheckSellerPage() {
         </p>
         <p className="doc-p">
           The recommendation records past purchases. vet402 does not insure a payment, hold customer funds, or refund
-          one. The 0 to 100 wallet and agent score APIs were deprecated in September 2026; for a seller check, use{" "}
-          <code>GET /api/v1/check?url=</code> or <code>GET /api/v1/resources/{"{resourceId}"}/decision</code>. A score
-          is a separate signal from an L0 to L2 result, as the{" "}
+          one. The 0 to 100 payee, wallet, and agent score APIs were deprecated in September 2026. For a seller check,
+          use <code>GET /api/v1/check?url=</code> or <code>GET /api/v1/resources/{"{resourceId}"}/decision</code>. A
+          score is a separate signal from an L0 to L2 result, as the{" "}
           <Link href="/faq" className="doc-link">
             FAQ
           </Link>{" "}

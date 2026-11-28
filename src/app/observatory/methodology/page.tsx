@@ -85,7 +85,7 @@ const MAX_PER_PURCHASE_USD = Number(MAX_PER_PURCHASE_UNITS) / 1_000_000;
  * listings (a verifier that special-cases itself is flagging its own fraud).
  */
 
-import { METHODOLOGY_BLURB, METHODOLOGY_TITLE } from "@/lib/observatory/methodology-copy";
+import { METHODOLOGY_BLURB, METHODOLOGY_IN_60, METHODOLOGY_TITLE } from "@/lib/observatory/methodology-copy";
 
 export const metadata: Metadata = pageMetadata({
   title: "Methodology for x402 payment measurements",
@@ -181,13 +181,11 @@ export default async function ObservatoryMethodologyPage() {
         </p>
         <div className="rule-double mx-auto mt-6 w-full max-w-[34ch]" />
 
+        {/* The 0 to 100 payee, wallet, and agent score APIs were deprecated in September 2026. */}
         <div className="mt-8 flex flex-col gap-1 sm:flex-row sm:gap-0">
           <p className="shrink-0 text-brand-deep sm:w-[10ch]">In 60 seconds</p>
           <p className="min-w-0 max-w-[62ch] text-brand">
-            L0 asks whether the payment wall answers. L1 asks whether a real purchase settles and comes back with a non-empty 2xx. L2
-            asks whether the response matches the seller&apos;s declaration. Unverified is not a
-            failure. A 0–100 score is a different API and is never an L0–L2 result. Every word this
-            page publishes measurements in is defined once, in one line each, in{" "}
+            {METHODOLOGY_IN_60.replace(/ in section 10\.$/, "")}{" "}
             <a href="#vocabulary" className="underline">
               section 10
             </a>
