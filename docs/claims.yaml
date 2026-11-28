@@ -737,8 +737,8 @@ claims:
     verified_at: 2026-09-04
   - id: method_failure_a_0_100_score
     surface: src/app/observatory/methodology/page.tsx
-    quote: "failure. A 0–100 score is a different API and is never an L0–L2 result."
-    means: "L0/L1/L2 の問いの切り分けと、スコア（別 API）を L0–L2 の結果として出さないという規約"
+    quote: "The 0 to 100 payee, wallet, and agent score APIs were deprecated in September 2026."
+    means: "L0/L1/L2 の問いの切り分けと、2026-09 廃止のスコア API を L0–L2 の結果として出さないこと。check と decision を使う"
     check: null
     why_unverifiable: "この文が述べているのは編集方針・設計上の性質であって、公開 GET が数値で返す種類の主張ではない"
     verified_at: 2026-09-04
@@ -881,7 +881,7 @@ claims:
   - id: lp_then_a_score_is_never
     surface: src/app/memo/page.tsx
     quote: "A score is never reported as an L0&ndash;L2 result."
-    means: "旧 0–100 スコアは移行期間中も API/SDK から使えるが、スコアを L0–L2 の測定結果として出すことはない"
+    means: "payee・wallet・agent の 0–100 スコア API は 2026-09 廃止。check と decision が統合の入口。スコアを L0–L2 の測定結果として出さない"
     check: null
     why_unverifiable: "この文が述べているのは編集方針・設計上の性質であって、公開 GET が数値で返す種類の主張ではない"
     verified_at: 2026-09-04
@@ -2316,7 +2316,7 @@ claims:
     verified_at: 2026-10-21
   - id: llms_score_not_an_l0_result
     surface: public/llms-full-prose.txt
-    quote: "is never reported as an L0 to L2 result. The front"
+    quote: "They are not L0 to L2 results."
     means: "0–100 のスコアは L0–L2 の結果としては出さない。"
     check: null
     why_unverifiable: "API の区別の説明。同じ文は方法論と語彙にあり、そちらで登録済み。"
@@ -2476,6 +2476,41 @@ claims:
     check: null
     why_unverifiable: "文書面の主張。tests/mcp-plain-english.test.ts と tests/delivery-feed-surface.test.ts が固定する"
     verified_at: 2026-10-28
+  - id: af_refunds_title_failed_payment
+    surface: src/app/x402/refunds/page.tsx
+    quote: "x402 refunds: failed payment and non-delivery"
+    means: "返金頁の title と H1。検索意図（払い失敗・未配達）を ~60 字（| vet402 込み）で示す"
+    check: null
+    why_unverifiable: "文書面。tests/seo-aeo-af-1129.test.ts が title・H1・長さを固定する"
+    verified_at: 2026-11-29
+  - id: af_memo_score_deprecated_sep_2026
+    surface: src/app/memo/page.tsx
+    quote: "were deprecated in 2026-09."
+    means: "memo §2.1 が payee・wallet・agent スコアの 2026-09 廃止と check/decision への導線を書く"
+    check: null
+    why_unverifiable: "tests/seo-aeo-af-1129.test.ts が公開面の廃止文言を固定する"
+    verified_at: 2026-11-29
+  - id: af_check_seller_bazaar_by_resource
+    surface: src/app/x402/check-a-seller/page.tsx
+    quote: "CHECK_SELLER_SECTIONS.bazaarDelivery"
+    means: "check-a-seller の Bazaar 節が by-resource の curl と decision への導線を書く（本文は CHECK_SELLER_SECTIONS）"
+    check: null
+    why_unverifiable: "tests/seo-aeo-af-1129.test.ts が Bazaar 節の文言を固定する"
+    verified_at: 2026-11-29
+  - id: af_llms_full_score_deprecated
+    surface: public/llms-full-prose.txt
+    quote: "The 0 to 100 payee, wallet, and agent score APIs were deprecated in September 2026."
+    means: "llms-full がスコア廃止と check/decision を書く"
+    check: null
+    why_unverifiable: "tests/seo-aeo-af-1129.test.ts が公開面の廃止文言を固定する"
+    verified_at: 2026-11-29
+  - id: af_llms_full_scoring_fail_closed
+    surface: public/llms-full-prose.txt
+    quote: "An input that could not be read is never reported as an input that was checked and found fine."
+    means: "llms-full がスコア未読入力を checked fine と言わない fail-closed 規約を書く"
+    check: null
+    why_unverifiable: "編集方針の説明。公開 GET が返す種類の主張ではない"
+    verified_at: 2026-11-29
   - id: ways_watch402_heading_quote
     surface: src/app/x402/ways-to-check-a-seller/page.tsx
     quote: "Every x402 listing on the Bazaar, checked daily. Publicly."
